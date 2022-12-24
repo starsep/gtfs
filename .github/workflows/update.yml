@@ -1,0 +1,33 @@
+name: Update data
+on:
+  schedule:
+    - cron:  "5 23 * * *"
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          repository: starsep/gtfs
+          path: gtfs
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          repository: starsep/gtfs-tczew
+          path: gtfs-tczew
+      - name: install dependencies and run
+        run: |
+          cd gtfs-tczew
+          pip install -r requirements.txt
+          make all
+      - name: commit and push update
+        run: |
+          cd gtfs
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          cp ../gtfs-tczew/output/gtfs-tczew.zip tczew.zip
+          cp ../gtfs-tczew/validation/report.html validation-tczew.html
+          git add tczew.zip validation-tczew.html
+          git commit -m "Update $(date +'%Y-%m-%d')"
+          git push origin main
